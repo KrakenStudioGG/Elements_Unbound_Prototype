@@ -18,6 +18,7 @@ public class AIDetectPlayer : MonoBehaviour
     private Vector2 offset;
     private float detectionDelay = 0.3f;
     public LayerMask detectLayerMask;
+    private Enemy enemy;
 
     public Color gizmoIdleColor = Color.green;
     public Color gizmoDetectedColor = Color.red;

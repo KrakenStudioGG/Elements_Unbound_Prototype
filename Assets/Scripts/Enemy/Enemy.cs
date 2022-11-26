@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using Random = UnityEngine.Random;
 using Vector2 = UnityEngine.Vector2;
 
@@ -9,21 +8,16 @@ public class Enemy : MonoBehaviour
 {
     private Animator enemyAnim;
     private SpriteRenderer enemyRenderer;
-    private Rigidbody2D enemyRB;
     private Vector2[] cardinalDirections;
     private static readonly int Run = Animator.StringToHash("run");
     private bool chasingPlayer;
-    private int damageAmount = 10;
-    private Transform playerPos;
+    private const int damageAmount = 10;
     private Vector2 moveDir;
-    private float damageTimer;
-    private float enemySpeed = 3f;
     private const float delayTimer = 0.3f;
-    private IEnumerator enumerator;
     private bool playerDetected;
-    private const float offset = 2f;
     private float moveDistance;
-    private bool canAttack;
+    private bool attackTrigger;
+    private float timer;
 
     private AIDetectPlayer aiScript;
 
@@ -32,38 +26,44 @@ public class Enemy : MonoBehaviour
         aiScript = GetComponent<AIDetectPlayer>();
         enemyAnim = GetComponent<Animator>();
         enemyRenderer = GetComponent<SpriteRenderer>();
-        enemyRB = GetComponent<Rigidbody2D>();
     }
 
     // Start is called before the first frame update
     void Start()
     {
         cardinalDirections = new Vector2[4];
-        damageTimer = 2f;
-        canAttack = true;
+        timer = 2f;
         CreateCardinalDirections();
         StartCoroutine(routine: PatrolCoroutine());
         if(aiScript != null)
             AIDetectPlayer.detectionEvent += AttackCoroutineEvent;
     }
-
-    private void Update()
+    
+    private void AttackCoroutineEvent()
     {
-        playerDetected = aiScript.PlayerDetected;
+        if (!attackTrigger)
+        {
+            Debug.Log("Attack Coroutine Triggered");
+            playerDetected = true;
+            attackTrigger = true;
+            StopAllCoroutines();
+            StartCoroutine(AttackCoroutine());
+        }
+        
     }
-
+    
     IEnumerator PatrolCoroutine()
     {
         yield return new WaitForSeconds(delayTimer);
-        enumerator = Movement();
-        StartCoroutine(enumerator);
+        StartCoroutine(routine:Patrol());
     }
 
-    IEnumerator Movement()
+    IEnumerator Patrol()
     {
         if(playerDetected) yield break;
         float speed = Random.Range(1f, 3f);
-        Vector2 direction = cardinalDirections[Random.Range(0, 4)];
+        Vector2 direction = cardinalDirections[Random.Range(0, 4)].normalized;
+        moveDir = direction;
         Vector2 targetDir = direction * Random.Range(1, 10);
 
         while (Vector2.Distance(transform.position, targetDir) > 0.1f)
@@ -78,55 +78,55 @@ public class Enemy : MonoBehaviour
         StartCoroutine(PatrolCoroutine());
     }
 
-    private void AttackCoroutineEvent()
+    IEnumerator AttackCoroutine()
     {
-        StopCoroutine(enumerator);
-        enumerator = Attack();
-        if (canAttack)
-        {
-            StartCoroutine(enumerator);
-        }
+        Debug.Log("AttackCoroutine Started");
+        yield return new WaitForSeconds(delayTimer);
+        StartCoroutine(Attack());
     }
 
     IEnumerator Attack()
     {
-        Debug.Log("Attack Coroutine Called");
         var targetPlayer = aiScript.Target;
         var chaseSpeed = 3f;
         Vector2 direction = (targetPlayer.transform.position - transform.position).normalized;
         moveDir = direction;
-        moveDistance = Vector2.Distance(transform.position, targetPlayer.transform.position);
-        
-        while (moveDistance > enemyRenderer.bounds.extents.x * offset)
+
+        while (Vector2.Distance(transform.position, targetPlayer.transform.position) > 1f)
         {
             transform.position = Vector2.MoveTowards(transform.position, targetPlayer.transform.position, chaseSpeed * Time.deltaTime);
             enemyAnim.SetBool(id:Run, true);
             FlipSprite(direction);
             yield return null;
         }
-        enemyAnim.SetBool(id:Run, false);
-        yield return new WaitForSeconds(3f);
-        DealDamage();
-        canAttack = true;
-        StartCoroutine(enumerator);
+
+        while (Vector2.Distance(transform.position, targetPlayer.transform.position) <= 1f)
+        {
+            enemyAnim.SetBool(id:Run, false);
+            DealDamage();
+            yield return null;
+        }
+        
+        StartCoroutine(AttackCoroutine());
     }
 
     private void DealDamage()
     {
-        PlayerController.ReduceHealth(damageAmount);
-        Debug.Log(PlayerController.PlayerHealth);
+        if (timer > 0f)
+        {
+            timer -= Time.deltaTime;
+        }
+        else
+        {
+            PlayerController.PlayerHealth -= damageAmount;
+            Debug.Log(PlayerController.PlayerHealth);
+            timer = 2f;
+        }
     }
 
     private void FlipSprite(Vector2 facingDir)
     {
-        if (moveDir.magnitude * Mathf.Sign(facingDir.x) < 0f)
-        {
-            enemyRenderer.flipX = true;
-        }
-        else
-        {
-            enemyRenderer.flipX = false;
-        }
+        enemyRenderer.flipX = moveDir.magnitude * Mathf.Sign(facingDir.x) < 0f;
     }
 
     private void CreateCardinalDirections()
