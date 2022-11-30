@@ -49,7 +49,6 @@ public class Enemy : MonoBehaviour
             StopAllCoroutines();
             StartCoroutine(AttackCoroutine());
         }
-        
     }
     
     IEnumerator PatrolCoroutine()
@@ -92,7 +91,7 @@ public class Enemy : MonoBehaviour
         Vector2 direction = (targetPlayer.transform.position - transform.position).normalized;
         moveDir = direction;
 
-        while (Vector2.Distance(transform.position, targetPlayer.transform.position) > 1f)
+        while (Vector2.Distance(transform.position, targetPlayer.transform.position) > 1.5f)
         {
             transform.position = Vector2.MoveTowards(transform.position, targetPlayer.transform.position, chaseSpeed * Time.deltaTime);
             enemyAnim.SetBool(id:Run, true);
@@ -100,7 +99,7 @@ public class Enemy : MonoBehaviour
             yield return null;
         }
 
-        while (Vector2.Distance(transform.position, targetPlayer.transform.position) <= 1f)
+        while (Vector2.Distance(transform.position, targetPlayer.transform.position) <= 2f)
         {
             enemyAnim.SetBool(id:Run, false);
             DealDamage();

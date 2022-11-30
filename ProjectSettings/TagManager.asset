@@ -14,7 +14,7 @@ TagManager:
   - UI
   - Player
   - Enemy
-  - 
+  - Environment
   - 
   - 
   - 
@@ -44,6 +44,9 @@ TagManager:
     locked: 0
   - name: DungeonFloor
     uniqueID: 2412552367
+    locked: 0
+  - name: DungeonWall
+    uniqueID: 1799551657
     locked: 0
   - name: Player
     uniqueID: 3553170545

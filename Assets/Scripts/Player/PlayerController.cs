@@ -11,9 +11,6 @@ using Vector3 = UnityEngine.Vector3;
 
 public class PlayerController : MonoBehaviour
 {
-    
-    //private PlayerInput inputs;
-    public Transform playerTransform;
     private InputControls inputControls;
     private Rigidbody2D playerRB;
     private Vector2 moveInput;
@@ -24,17 +21,18 @@ public class PlayerController : MonoBehaviour
     private Camera mainCam;
     
     private const float speed = 3f;
-    public GameObject prefab;
-    private bool spellIsActive;
+    public bool spellIsActive;
     private Vector2 playerCurrentPos;
     private Vector2 mouseCurrentPos;
-    
-    //public static int PlayerHealth { get; set; }
+
     public static Sprite PlayerSprite { get; private set; }
     public static Transform PlayerTransform { get; private set; }
+    public int CurrentSpellKey { get; private set; }
     public static int PlayerHealth { get; set; }
 
-
+    public delegate void CastSpellEvent(Vector2 playerPos, Vector2 mousePos);
+    public static event CastSpellEvent castSpellEvent;
+    
     private void OnEnable()
     {
         inputControls = new InputControls();
@@ -59,7 +57,7 @@ public class PlayerController : MonoBehaviour
     {
         fireInput = ctx.ReadValue<float>();
     }
-    
+
     private void MovePlayer()
     {
         playerRB.velocity = new Vector2(moveInput.x * speed, moveInput.y * speed);
@@ -92,38 +90,31 @@ public class PlayerController : MonoBehaviour
         MovePlayer();
         PlayerLook();
         FlipSprite();
-
+        GetCurrentSpellKey();
         if (inputControls.Player.Fire.WasPressedThisFrame() && spellIsActive == false)
         {
             playerCurrentPos = transform.position;
             mouseCurrentPos = mousePoint;
-            CastSpell(playerCurrentPos);
+            castSpellEvent?.Invoke(playerCurrentPos, mouseCurrentPos);
         }
-        
-        //Debug.Log(PlayerHealth);
-        
     }
 
-    private void CastSpell(Vector2 player)
+    private void GetCurrentSpellKey()
     {
-        spellIsActive = true;
-        var spell = Instantiate(prefab, player, Quaternion.identity);
-        StartCoroutine(routine:MoveSpell(spell));
-    }
-
-    IEnumerator MoveSpell(GameObject _spell)
-    {
-        var spellSpeed = 3f;
-        _spell.transform.position = playerCurrentPos;
-
-        while (Vector2.Distance(_spell.transform.position, mouseCurrentPos) > 0.1f)
+        KeyCode[] keyCodes =
         {
-            _spell.transform.position = Vector2.MoveTowards(_spell.transform.position, mouseCurrentPos, spellSpeed * Time.deltaTime);
-            RotateSprite(_spell, mouseCurrentPos);
-            yield return null;
+            KeyCode.Alpha1,
+            KeyCode.Alpha2,
+            KeyCode.Alpha3,
+            KeyCode.Alpha4
+        };
+        for (int i = 0; i < keyCodes.Length; i++)
+        {
+            if (Input.GetKeyDown(keyCodes[i]))
+            {
+                CurrentSpellKey = i + 1;
+            }
         }
-        Destroy(_spell);
-        spellIsActive = false;
     }
 
     private void FlipSprite()
@@ -135,16 +126,7 @@ public class PlayerController : MonoBehaviour
             transform.localScale = new Vector2(Mathf.Sign(playerRB.velocity.x), 1f);
         }
     }
-
-    private void RotateSprite(GameObject _spell, Vector2 mouse)
-    {
-        Vector3 moveDir = (Vector3)mouse - _spell.transform.position;
-        moveDir = moveDir.normalized;
-        float angle = Mathf.Atan2(moveDir.y, moveDir.x) * Mathf.Rad2Deg;
-        Quaternion rotateVal = Quaternion.AngleAxis(angle, Vector3.forward);
-        _spell.transform.rotation = Quaternion.Slerp(_spell.transform.rotation, rotateVal, Time.deltaTime * 100f);
-    }
-
+    
     public static void ReduceHealth(int damage)
     {
         PlayerHealth -= damage;
