@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5301132479184668083}
   - component: {fileID: 452036910803098727}
   - component: {fileID: 5590294300056035549}
+  - component: {fileID: -4164998558281903111}
   m_Layer: 0
   m_Name: Fire Ball 1
   m_TagString: Untagged
@@ -94,7 +95,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -741796751
-  m_SortingLayer: 2
+  m_SortingLayer: 3
   m_SortingOrder: 1
   m_Sprite: {fileID: -3911757156971958152, guid: e5db1759026142f4199a1db87314fe30, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -144,3 +145,16 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.5
+--- !u!114 &-4164998558281903111
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5301132479184668092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 358ed9ba4e4539f41b948331f5abb62b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spellObject: {fileID: 11400000, guid: 89dd53b8ed0583644b8a098d03a01f39, type: 2}

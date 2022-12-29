@@ -9,59 +9,67 @@ using Vector3 = UnityEngine.Vector3;
 
 public class SpellBaseScript : MonoBehaviour
 {
-    public GameObject[] prefab;
+    public SpellDatabase spellDB;
     public GameObject[] spellList;
-    private PlayerController player;
+    protected PlayerController player;
+    private SpellDBManager dbManager;
     private Vector2 spellStartPos;
     private Vector2 spellEndPos;
-    private int prefabIndex;
+    private int spellIndex;
+    private float spellSpeed;
 
     private void Awake()
     {
         player = FindObjectOfType<PlayerController>();
+        dbManager = FindObjectOfType<SpellDBManager>();
     }
 
     private void OnEnable()
     {
-        if (player != null)
-            PlayerController.castSpellEvent += CastSpell;
+        dbManager.moveEvent += MoveEvent;
     }
 
     private void OnDisable()
     {
-        PlayerController.castSpellEvent -= CastSpell;
+        //PlayerController.castSpellEvent -= CastSpell;
+        dbManager.moveEvent -= MoveEvent;
     }
 
     private void Start()
     {
-        CreateSpellPool();
+        Debug.Log($"Current Spell is : {gameObject.name}");
     }
 
-    private void CastSpell(Vector2 playerPos, Vector2 mousePos)
+    private void MoveEvent(bool moveOverride, Vector2 _player, Vector2 _mouse, float _speed)
     {
-        prefabIndex = player.CurrentSpellKey - 1;
-        player.spellIsActive = true;
-        spellStartPos = playerPos;
-        spellEndPos = mousePos;
-        StartCoroutine(routine:MoveSpell());
-    }
-
-    IEnumerator MoveSpell()
-    {
-        spellList[prefabIndex].SetActive(true);
-        var spellSpeed = 3f;
-        spellList[prefabIndex].transform.position = spellStartPos;
-        
-        while (Vector2.Distance(spellList[prefabIndex].transform.position, spellEndPos) > 0.1f)
+        if (!moveOverride)
         {
-            spellList[prefabIndex].transform.position = Vector2.MoveTowards(spellList[prefabIndex].transform.position, spellEndPos, spellSpeed * Time.deltaTime);
-            RotateSprite(spellList[prefabIndex], spellEndPos);
+            spellSpeed = _speed;
+            spellStartPos = _player;
+            spellEndPos = _mouse;
+            StartCoroutine(routine: MoveSpell());
+        }
+        
+        if (moveOverride)
+        {
+            StartCoroutine(routine: MoveSpellOverride());
+        }
+        
+    }
+
+    private IEnumerator MoveSpell()
+    {
+        transform.position = spellStartPos;
+        while (Vector2.Distance(transform.position, spellEndPos) > 0.1f)
+        {
+            transform.position = Vector2.MoveTowards(transform.position, spellEndPos, spellSpeed * Time.deltaTime);
+            RotateSprite(gameObject, spellEndPos);
             yield return null;
         }
-        spellList[prefabIndex].SetActive(false);
+        gameObject.SetActive(false);
         player.spellIsActive = false;
     }
-    
+
     private void RotateSprite(GameObject _spell, Vector2 mouse)
     {
         Vector3 moveDir = (Vector3)mouse - _spell.transform.position;
@@ -71,14 +79,8 @@ public class SpellBaseScript : MonoBehaviour
         _spell.transform.rotation = Quaternion.Slerp(_spell.transform.rotation, rotateVal, Time.deltaTime * 100f);
     }
 
-    private void CreateSpellPool()
+    private IEnumerator MoveSpellOverride()
     {
-        spellList = new GameObject[4];
-        GameObject spell;
-        for (int i = 0; i < prefab.Length; i++)
-        {
-            spellList[i] = Instantiate(prefab[i], Vector2.zero, Quaternion.identity);
-            spellList[i].SetActive(false);
-        }
+        yield return new WaitForSeconds(3f);
     }
 }

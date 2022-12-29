@@ -1,11 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Numerics;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Quaternion = UnityEngine.Quaternion;
 using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
 
@@ -30,8 +27,9 @@ public class PlayerController : MonoBehaviour
     public int CurrentSpellKey { get; private set; }
     public static int PlayerHealth { get; set; }
 
-    public delegate void CastSpellEvent(Vector2 playerPos, Vector2 mousePos);
+    public delegate void CastSpellEvent(int spellKey ,Vector2 playerPos, Vector2 mousePos);
     public static event CastSpellEvent castSpellEvent;
+    
     
     private void OnEnable()
     {
@@ -82,6 +80,7 @@ public class PlayerController : MonoBehaviour
         PlayerTransform = GetComponent<Transform>();
         mainCam = Camera.main;
         PlayerHealth = 100;
+        CurrentSpellKey = 1;
     }
 
     // Update is called once per frame
@@ -95,7 +94,7 @@ public class PlayerController : MonoBehaviour
         {
             playerCurrentPos = transform.position;
             mouseCurrentPos = mousePoint;
-            castSpellEvent?.Invoke(playerCurrentPos, mouseCurrentPos);
+            castSpellEvent?.Invoke(CurrentSpellKey, playerCurrentPos, mouseCurrentPos);
         }
     }
 
@@ -113,6 +112,7 @@ public class PlayerController : MonoBehaviour
             if (Input.GetKeyDown(keyCodes[i]))
             {
                 CurrentSpellKey = i + 1;
+                Debug.Log($"Current Spell Key is {CurrentSpellKey}");
             }
         }
     }

@@ -1,7 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 
 public enum ElementTypes
 {
@@ -11,6 +11,7 @@ public enum ElementTypes
     Air,
     Default
 }
+
 public abstract class SpellObject : ScriptableObject
 {
     public ElementTypes type;
@@ -19,4 +20,6 @@ public abstract class SpellObject : ScriptableObject
     public float damage;
     [TextArea(5, 10)]
     public string description;
+    public bool isMovementOverride;
 }
+
