@@ -12,7 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4207f1d2df3ecb04391e456afd0bf382, type: 3}
   m_Name: SpellDB
   m_EditorClassIdentifier: 
-  spellBase: {fileID: 0}
   spells:
   - {fileID: 11400000, guid: 89dd53b8ed0583644b8a098d03a01f39, type: 2}
   - {fileID: 11400000, guid: dd28da4e88a8e934ab441b7b494f336d, type: 2}

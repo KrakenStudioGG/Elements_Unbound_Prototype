@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   type: 4
   prefab: {fileID: 3060313462440613987, guid: 231d82c666dd47943a3d87396bc8acfb, type: 3}
-  speed: 1
+  speed: 0.2
   damage: 10
   description: 
-  isMovementOverride: 1
+  isMovementOverride: 0

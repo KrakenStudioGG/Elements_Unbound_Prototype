@@ -9,14 +9,13 @@ using Vector3 = UnityEngine.Vector3;
 
 public class SpellBaseScript : MonoBehaviour
 {
-    public SpellDatabase spellDB;
-    public GameObject[] spellList;
     protected PlayerController player;
     private SpellDBManager dbManager;
     private Vector2 spellStartPos;
-    private Vector2 spellEndPos;
+    protected Vector2 spellEndPos;
     private int spellIndex;
     private float spellSpeed;
+    protected bool moveCompleted;
 
     private void Awake()
     {
@@ -31,14 +30,14 @@ public class SpellBaseScript : MonoBehaviour
 
     private void OnDisable()
     {
-        //PlayerController.castSpellEvent -= CastSpell;
         dbManager.moveEvent -= MoveEvent;
     }
 
-    private void Start()
+    protected virtual void Start()
     {
         Debug.Log($"Current Spell is : {gameObject.name}");
     }
+    
 
     private void MoveEvent(bool moveOverride, Vector2 _player, Vector2 _mouse, float _speed)
     {
@@ -47,17 +46,12 @@ public class SpellBaseScript : MonoBehaviour
             spellSpeed = _speed;
             spellStartPos = _player;
             spellEndPos = _mouse;
+            Debug.Log("Start Base Coroutine");
             StartCoroutine(routine: MoveSpell());
         }
-        
-        if (moveOverride)
-        {
-            StartCoroutine(routine: MoveSpellOverride());
-        }
-        
     }
 
-    private IEnumerator MoveSpell()
+    protected virtual IEnumerator MoveSpell()
     {
         transform.position = spellStartPos;
         while (Vector2.Distance(transform.position, spellEndPos) > 0.1f)
@@ -69,18 +63,14 @@ public class SpellBaseScript : MonoBehaviour
         gameObject.SetActive(false);
         player.spellIsActive = false;
     }
+    
 
-    private void RotateSprite(GameObject _spell, Vector2 mouse)
+    protected virtual void RotateSprite(GameObject _spell, Vector2 mouse)
     {
         Vector3 moveDir = (Vector3)mouse - _spell.transform.position;
         moveDir = moveDir.normalized;
         float angle = Mathf.Atan2(moveDir.y, moveDir.x) * Mathf.Rad2Deg;
         Quaternion rotateVal = Quaternion.AngleAxis(angle, Vector3.forward);
         _spell.transform.rotation = Quaternion.Slerp(_spell.transform.rotation, rotateVal, Time.deltaTime * 100f);
-    }
-
-    private IEnumerator MoveSpellOverride()
-    {
-        yield return new WaitForSeconds(3f);
     }
 }
